@@ -55,12 +55,11 @@ app.post('/', async (req, res) => {
     })
     const newContent = frameList.join('').replace('UPDATE_ME', length)
 
-    console.log(newContent)
     // 새로운 설정 페이지를 입력합니다.
-    // await fetchDoc();
-    // const htmlData = makeHtml(newContent)
-    //
-    // await updateDoc(htmlData);
+    await fetchDoc();
+    const htmlData = makeHtml(newContent)
+
+    await updateDoc(htmlData);
     res.send('finished')
 })
 
