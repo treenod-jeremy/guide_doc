@@ -1,13 +1,13 @@
 const countries = {'': "ALL", 'ja': "JAPAN", 'en': "GLOBAL", 'ta': "TA"}
 
-const scheme = ({key, title, value}, secondIdx, {firstIdx, length, headline}) => {
+const scheme = ({key, title, value}, secondIdx, {firstIdx, length, headline, date}) => {
 
     let element = '';
     switch (key) {
         case 'onAirFlag':
 
             element =
-                ['<tr>', (!firstIdx ? `<td rowspan="UPDATE_ME"></td>` : ''), (!secondIdx ? `<td rowspan="${length}"><h3>${headline}</h3></td>` : ''),
+                ['<tr>', (!firstIdx ? `<td rowspan="UPDATE_ME">${date}</td>` : ''), (!secondIdx ? `<td rowspan="${length}"><h3>${headline}</h3></td>` : ''),
                     ` <td><p>${title}</p></td>
                     <td><p>${value ? 'ON' : 'OFF'}</p></td>
                     <td><p/></td>
@@ -45,21 +45,32 @@ const scheme = ({key, title, value}, secondIdx, {firstIdx, length, headline}) =>
     return element
 }
 
-const parser = ({ko, en, list}, firstIdx) => {
+const parser = ({ko, en, list}, firstIdx, date) => {
 
     const headline = `${en}(${ko})`
 
-    const length = list.length
+    const flag = list.some(x=>x.key === 'extraData')
+
+    const length = flag ? list.length : list.length + 1
 
     const extraInfo = {
         firstIdx,
         length,
-        headline
+        headline,
+        date
     }
 
-    const schemeList = list.map((x, idx) => scheme(x, idx, extraInfo))
-    const rowSum = schemeList.length
+    let schemeList = list.map((x, idx) => scheme(x, idx, extraInfo))
 
+    if(!flag){
+        schemeList.splice(1,0, `<tr>
+        <td><p>Version</p></td>
+        <td><p>DEFAULT</p></td>
+        <td><p/></td>
+    </tr>`)
+    }
+
+    const rowSum = schemeList.length
     return [schemeList.join(''), rowSum]
 }
 

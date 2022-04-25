@@ -1,13 +1,40 @@
 import fetch from "node-fetch";
 import express from 'express';
 import bodyParser from 'body-parser'
+import yaml from 'js-yaml'
+import fs from 'fs'
 import {parser} from "./schema.js";
 
 let currVersion = 1;
 let htmlText = '<h1>공사중</h1>';
 let title = '';
+let accessUrl = '';
 const app = express()
 const port = 5252
+
+
+const fetchDate = async () => {
+    const response = await fetch('http://127.0.0.1:5000/time', {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        }
+    })
+    return await response.json()
+}
+
+try{
+    const doc = yaml.load(fs.readFileSync('urlSetting.yml', 'utf8'))
+
+    const dateData = await fetchDate()
+    const date = new Date(dateData.currentTime)
+    const [year, month] = [date.getFullYear(), date.getMonth()]
+    accessUrl = doc[year][month]
+}catch (e){
+    console.log(e)
+}
+
 
 app.use(bodyParser.urlencoded({extended: true, limit: '1mb'}))
 app.use(bodyParser.json({limit: '1mb'}))
@@ -18,11 +45,11 @@ app.get('/', (req, res) => {
 
 app.post('/', async (req, res) => {
 
-    const {changedData} = req.body
+    const {changedData, date} = req.body
     const dataList = JSON.parse(changedData)
     let length = 0
     const frameList = dataList.map((x, idx) => {
-        const result = parser(x, idx)
+        const result = parser(x, idx, date)
         length += result[1]
         return result[0]
     })
@@ -30,10 +57,10 @@ app.post('/', async (req, res) => {
 
     console.log(newContent)
     // 새로운 설정 페이지를 입력합니다.
-    await fetchDoc();
-    const htmlData = makeHtml(newContent)
-
-    await updateDoc(htmlData);
+    // await fetchDoc();
+    // const htmlData = makeHtml(newContent)
+    //
+    // await updateDoc(htmlData);
     res.send('finished')
 })
 
@@ -56,7 +83,7 @@ const makeHtml = (newContent) => {
 
 // 설정 가이드 페이지를 갖고 옵니다
 const fetchDoc = async () => {
-    const response = await fetch('https://treenod.atlassian.net/wiki/rest/api/content/71264732554?expand=body.storage,version.number', {
+    const response = await fetch(`https://treenod.atlassian.net/wiki/rest/api/content/${accessUrl}?expand=body.storage,version.number`, {
         method: 'GET',
         headers: {
             'Authorization': 'Basic bWluc3VrMDJAdHJlZW5vZC5jb206NWV4QmY5TnAyWW9KVHhkcldkOENGQkIx',
@@ -91,7 +118,7 @@ const updateDoc = async (htmlData) => {
         }
     }`;
 
-    const response = await fetch('https://treenod.atlassian.net/wiki/rest/api/content/71264732554', {
+    const response = await fetch(`https://treenod.atlassian.net/wiki/rest/api/content/${accessUrl}`, {
         method: 'PUT',
         headers: {
             'Authorization': 'Basic bWluc3VrMDJAdHJlZW5vZC5jb206NWV4QmY5TnAyWW9KVHhkcldkOENGQkIx',
