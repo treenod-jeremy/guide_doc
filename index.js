@@ -29,8 +29,9 @@ try{
 
     const dateData = await fetchDate()
     const date = new Date(dateData.currentTime)
-    const [year, month] = [date.getFullYear(), date.getMonth()]
+    const [year, month] = [date.getFullYear(), date.getMonth()+1]
     accessUrl = doc[year][month]
+    
 }catch (e){
     console.log(e)
 }
