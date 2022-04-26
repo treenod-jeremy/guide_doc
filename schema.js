@@ -63,20 +63,20 @@ const parser = ({ko, en, list}, firstIdx, date) => {
     let schemeList = list.map((x, idx) => scheme(x, idx, extraInfo))
 
     if (flags[0]) {
-        if (!flags[2]) {
-            schemeList.splice(1, 0, `
-    <tr>
-       <td><p>Country</p></td>
-       <td><p>ALL</p></td>
-       <td><p/></td>
-    </tr>
-`)}
         if (!flags[1]) {
             schemeList.splice(1, 0, `
     <tr>
         <td><p>Version</p></td>
         <td><p>DEFAULT</p></td>
         <td><p/></td>
+    </tr>
+`)}
+        if (!flags[2]) {
+            schemeList.splice(1, 0, `
+    <tr>
+       <td><p>Country</p></td>
+       <td><p>ALL</p></td>
+       <td><p/></td>
     </tr>
 `)}
     }
