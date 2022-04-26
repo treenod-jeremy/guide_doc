@@ -5,7 +5,6 @@ const scheme = ({key, title, value}, secondIdx, {firstIdx, length, headline, dat
     let element = '';
     switch (key) {
         case 'onAirFlag':
-
             element =
                 ['<tr>', (!firstIdx && !secondIdx ? `<td rowspan="UPDATE_ME">${date}</td>` : ''), (!secondIdx ? `<td rowspan="${length}"><h3>${headline}</h3></td>` : ''),
                     ` <td><p>${title}</p></td>
@@ -14,20 +13,11 @@ const scheme = ({key, title, value}, secondIdx, {firstIdx, length, headline, dat
                 </tr>`].join('')
             break
 
-        case 'extraData':
-            element = `
-                <tr>
-                    <td><p>${title}</p></td>
-                    <td><p>${value ? value : 'DEFAULT'}</p></td>
-                    <td><p/></td>
-                </tr>`
-            break
-
         case 'countryFilter':
             element = `
                 <tr>
                     <td><p>${title}</p></td>
-                    <td><p>${value ? countries[value] : 'ALL'}</p></td>
+                    <td><p>${countries[value]}</p></td>
                     <td><p/></td>
                 </tr>`
             break
@@ -48,9 +38,20 @@ const parser = ({ko, en, list}, firstIdx, date) => {
 
     const headline = `${en}(${ko})`
 
-    const flag = list.some(x => x.key === 'extraData')
+    const flags = [list.some(x => x.key === 'onAirFlag'), list.some(x => x.key === 'extraData'), list.some(x => x.key === 'countryFilter')]
+    let length = list.length
 
-    const length = flag ? list.length : (list.some(x=> x.key === 'onAirFlag') ? list.length + 1 : list.length)
+    //Event일 때
+    if (flags[0]) {
+        //Version 필터가 없다면
+        if (!flags[1]) {
+            length += 1
+        }
+        //CountryFilter 가 없다면
+        if (!flags[2]) {
+            length += 1
+        }
+    }
 
     const extraInfo = {
         firstIdx,
@@ -61,12 +62,23 @@ const parser = ({ko, en, list}, firstIdx, date) => {
 
     let schemeList = list.map((x, idx) => scheme(x, idx, extraInfo))
 
-    if (!flag && list.some(x => x.key === 'onAirFlag')) {
-        schemeList.splice(1, 0, `<tr>
+    if (flags[0]) {
+        if (!flags[2]) {
+            schemeList.splice(1, 0, `
+    <tr>
+       <td><p>Country</p></td>
+       <td><p>ALL</p></td>
+       <td><p/></td>
+    </tr>
+`)}
+        if (!flags[1]) {
+            schemeList.splice(1, 0, `
+    <tr>
         <td><p>Version</p></td>
         <td><p>DEFAULT</p></td>
         <td><p/></td>
-    </tr>`)
+    </tr>
+`)}
     }
 
     const rowSum = schemeList.length

@@ -9,6 +9,7 @@ let currVersion = 1;
 let htmlText = '<h1>공사중</h1>';
 let title = '';
 let accessUrl = '';
+let accessKey = '';
 const app = express()
 const port = 5252
 
@@ -31,7 +32,8 @@ try{
     const date = new Date(dateData.currentTime)
     const [year, month] = [date.getFullYear(), date.getMonth()+1]
     accessUrl = doc[year][month]
-    
+    accessKey = doc['jeremyKey']
+
 }catch (e){
     console.log(e)
 }
@@ -86,7 +88,7 @@ const fetchDoc = async () => {
     const response = await fetch(`https://treenod.atlassian.net/wiki/rest/api/content/${accessUrl}?expand=body.storage,version.number`, {
         method: 'GET',
         headers: {
-            'Authorization': 'Basic bWluc3VrMDJAdHJlZW5vZC5jb206NWV4QmY5TnAyWW9KVHhkcldkOENGQkIx',
+            'Authorization': `Basic ${accessKey}`,
             'Accept': 'application/json',
             'Content-Type': 'application/json'
         }
@@ -121,7 +123,7 @@ const updateDoc = async (htmlData) => {
     const response = await fetch(`https://treenod.atlassian.net/wiki/rest/api/content/${accessUrl}`, {
         method: 'PUT',
         headers: {
-            'Authorization': 'Basic bWluc3VrMDJAdHJlZW5vZC5jb206NWV4QmY5TnAyWW9KVHhkcldkOENGQkIx',
+            'Authorization': `Basic ${accessKey}`,
             'Accept': 'application/json',
             'Content-Type': 'application/json'
         },
