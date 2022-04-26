@@ -7,7 +7,7 @@ const scheme = ({key, title, value}, secondIdx, {firstIdx, length, headline, dat
         case 'onAirFlag':
 
             element =
-                ['<tr>', (!firstIdx ? `<td rowspan="UPDATE_ME">${date}</td>` : ''), (!secondIdx ? `<td rowspan="${length}"><h3>${headline}</h3></td>` : ''),
+                ['<tr>', (!firstIdx && !secondIdx ? `<td rowspan="UPDATE_ME">${date}</td>` : ''), (!secondIdx ? `<td rowspan="${length}"><h3>${headline}</h3></td>` : ''),
                     ` <td><p>${title}</p></td>
                     <td><p>${value ? 'ON' : 'OFF'}</p></td>
                     <td><p/></td>
@@ -33,12 +33,11 @@ const scheme = ({key, title, value}, secondIdx, {firstIdx, length, headline, dat
             break
 
         default:
-            element = `
-                <tr>
-                    <td><p>${title}</p></td>
+            element = ['<tr>', (!firstIdx && !secondIdx ? `<td rowspan="UPDATE_ME">${date}</td>` : ''), (!secondIdx ? `<td rowspan="${length}"><h3>${headline}</h3></td>` : ''),
+                ` <td><p>${title}</p></td>
                     <td><p>${value}</p></td>
                     <td><p/></td>
-                </tr>`
+                </tr>`].join('')
             break
 
     }
@@ -49,9 +48,9 @@ const parser = ({ko, en, list}, firstIdx, date) => {
 
     const headline = `${en}(${ko})`
 
-    const flag = list.some(x=>x.key === 'extraData')
+    const flag = list.some(x => x.key === 'extraData')
 
-    const length = flag ? list.length : list.length + 1
+    const length = flag ? list.length : (list.some(x=> x.key === 'onAirFlag') ? list.length + 1 : list.length)
 
     const extraInfo = {
         firstIdx,
@@ -62,8 +61,8 @@ const parser = ({ko, en, list}, firstIdx, date) => {
 
     let schemeList = list.map((x, idx) => scheme(x, idx, extraInfo))
 
-    if(!flag){
-        schemeList.splice(1,0, `<tr>
+    if (!flag && list.some(x => x.key === 'onAirFlag')) {
+        schemeList.splice(1, 0, `<tr>
         <td><p>Version</p></td>
         <td><p>DEFAULT</p></td>
         <td><p/></td>
